@@ -3,3 +3,6 @@
 
 # PyCharm-related files
 .idea/
+
+# Files created by pip after instaling this package
+*.egg-info/
