@@ -7,7 +7,8 @@ setup(
     install_requires=[
         'qcodes',
         'plottr',
-        'broadbean'
+        'broadbean',
+        'numpy'
     ],
 
     author='Mikhail Astafev',
