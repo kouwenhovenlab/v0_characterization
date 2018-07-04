@@ -40,7 +40,7 @@ def instrument_factory(instrument_class: type,
             name, instrument_class=instrument_class)
         instrument.connect_message()  # prints the message
     except KeyError as exception:
-        if "has been removed" in str(exception):
+        if any(str_ in str(exception) for str_ in [name, 'has been removed']):
             instrument = instrument_class(name, *args, **kwargs)
         else:
             raise exception
