@@ -1,15 +1,28 @@
-from typing import Type
-import numpy as np
+"""
+This module contains the infrastructure classes for correct loading of
+broadbean sequence objects produced by sequence generators to AWG devices.
+"""
 
+from typing import Type
+
+import numpy as np
 from qcodes import Instrument, Parameter
 from qcodes.instrument_drivers.tektronix.AWG70000A import AWG70000A, \
     _chan_resolutions as awg_channel_resolutions
 from qcodes.utils.validators import Numbers
+
 from .sequence_generators import SequenceGenerator, \
     OneChannelOneMarkerGenerator
 
 
 class AwgSequencer(Instrument):
+    """
+    This is the base class of an AWG sequencer. The goal of this class is to
+    encapsulate the logic of sending a broadbean sequence object to an AWG
+    instrument. This instrument contains AWG and a sequence generator as its
+    submodules.
+    """
+
     def __init__(self,
                  name: str,
                  awg_obj: Type[AWG70000A],
@@ -25,8 +38,24 @@ class AwgSequencer(Instrument):
 
         self.delegate_attr_objects = ['awg', 'sequence_gen']
 
+    def send_sequence_and_setup_awg(self) -> None:
+        """
+        This method shall perform the action of generating the sequence from
+        the sequence generator, forging it, sending it as a sequence file to
+        AWG, loading it, and assigning to channels.
+
+        It is very useful to add this as a "before_run" for "Measurement"
+        """
+        raise NotImplementedError("AwgSequencer must implement this method")
+
 
 class OneChannelOneMarkerAwgSequencer(AwgSequencer):
+    """
+    An AWG sequence virtual instrument that uploads broadbean sequences
+    that contain only one analog channel and one marker channel (that is
+    attached to it).
+    """
+
     def __init__(self,
                  name: str,
                  awg_obj: Type[AWG70000A],
@@ -155,11 +184,13 @@ class OneChannelOneMarkerAwgSequencer(AwgSequencer):
 
         # Add sequence to the channel
         track_number = 1
-        channel_obj.setSequenceTrack(self.sequence_gen.sequence_name, track_number)
+        channel_obj.setSequenceTrack(self.sequence_gen.sequence_name,
+                                     track_number)
 
         channel_obj.awg_amplitude(self.channel_p_p_amplitude_factor())
 
-        # We reserve 15 bits for the analog channel so we have 1 bit for marker 1
+        # We reserve 15 bits for the analog channel, so that we have 1 bit for
+        # the marker 1
         channel_obj.resolution(
             self._get_channel_resolution() - self.sequence_gen.number_of_markers)
 
