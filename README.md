@@ -15,8 +15,9 @@ experiments
 
 ## Installation
 
-* Clone this repository
-* In the command prompt (or terminal, or Anaconda prompt), from the root
-of the cloned repository, install this using pip like this: `pip install
---no-deps -e .`
+1. Clone this repository
+2. In the command prompt (or terminal, or Anaconda prompt), from the root
+of the cloned repository, install this package using pip like this: `pip 
+install --no-deps -e .` (the `-e` argument removes the need for reinstalling 
+the package once local changes has been made)
 
