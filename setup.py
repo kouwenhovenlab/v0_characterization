@@ -4,7 +4,11 @@ setup(
     name='v0_characterization',
     version='0.0.1',
 
-    install_requires=['qcodes'],
+    install_requires=[
+        'qcodes',
+        'plottr',
+        'broadbean'
+    ],
 
     author='Mikhail Astafev',
     author_email='astafan8@gmail.com',
