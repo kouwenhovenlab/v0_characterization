@@ -13,6 +13,7 @@ from qcodes.instrument_drivers.tektronix.AWG70000A import _chan_resolutions \
 
 # Broadbean module for defining signals emitted by AWG
 import broadbean
+from broadbean.plotting import plotter as broadbean_plotter
 
 from qcodes.utils.validators import Numbers
 
@@ -210,7 +211,7 @@ class SequenceGenerator(Instrument):
                                   "implement make_broadbean_sequence method")
 
     def plot_broadbean_sequence(self):
-        broadbean.plotting.plotter(self.make_broadbean_sequence())
+        broadbean_plotter(self.make_broadbean_sequence())
 
 
 class OneChannelOneMarkerGenerator(SequenceGenerator):
