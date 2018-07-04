@@ -15,6 +15,40 @@ from qcodes.dataset.experiment_container import Experiment
 from qcodes.instrument.base import InstrumentBase
 
 
+class VirtualInstrument(InstrumentBase):
+    """
+    This class is a convenience wrapper around InstrumentBase for creating
+    Instruments which are just a collection of QCoDeS parameters, which are
+    not intended to "write" or "ask" commands from the hardware, and which do
+    not need to be added to the register of Instrument instances. This class
+    also fixed a bug in `InstrumentBase` by adding `_meta_attr` atribute that
+    `snapshot_base` of `InstrumentBase` relies on.
+
+    Ideally, the `Instrument` class shall be made free of the "write" and "ask"
+    responsibilities (and `Parameter` class should also not expect to be a part
+    of and instrument that can "write" and "ask"), and a new class called
+    HardwareInstrument shall be added that does have "write" and "ask"
+    method, and which all the drivers (or VISA and IP instruments) shall
+    inherit from.
+    """
+
+    _meta_attrs = ['name']  # TODO: fix this bug in InstrumentBase
+
+    def ask(self):
+        """
+        This blank method is needed for `Parameters` to be able to be added
+        with add_parameter method
+        """
+        pass
+
+    def write(self):
+        """
+        This blank method is needed for `Parameters` to be able to be added
+        with add_parameter method
+        """
+        pass
+
+
 def instrument_factory(instrument_class: type,
                        name: str,
                        *args, **kwargs

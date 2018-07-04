@@ -1,16 +1,17 @@
 import broadbean
 import numpy as np
 from broadbean.plotting import plotter as broadbean_plotter
-from qcodes import Instrument
 from qcodes.utils.validators import Numbers
+
+from .qcodes_tools import VirtualInstrument
 from .ramps import RepeatingStaircaseRamp
 
 
-class SequenceGenerator(Instrument):
+class SequenceGenerator(VirtualInstrument):
     # __init__ should have all sequence-specific parameters
     def __init__(self,
                  name: str,
-                 sequence_name: str=None,
+                 sequence_name: str = None,
                  **kwargs):
         super().__init__(name, **kwargs)
 
@@ -35,6 +36,7 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
     Generates broadbean sequence for a staircase with a marker signal for
     triggering.
     """
+
     def __init__(self,
                  name: str,
                  **kwargs):
@@ -75,7 +77,8 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
                            )
 
         # Waveform generation specific parameters
-        self.add_parameter(name='sample_rate',  # TODO: perhaps should be derived from AWG settings and limits
+        self.add_parameter(name='sample_rate',
+                           # TODO: perhaps should be derived from AWG settings and limits
                            label='Sample rate',
                            unit='S/s',
                            get_cmd=None,
@@ -97,7 +100,8 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
                                      "falling edge occurs, hence the sample "
                                      "is acquired on hte lock-in this value depends on the system-under-measurement"
                            )
-        self.add_parameter(name='lockin_integration_time',  # TODO: perhaps rename to smth lockin-independent
+        self.add_parameter(name='lockin_integration_time',
+                           # TODO: perhaps rename to smth lockin-independent
                            label='Time within step after trigger signal',
                            unit='s',
                            get_cmd=None,
@@ -164,7 +168,8 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
             staircase_blueprint.insertSegment(
                 -1,  # append to the end of the blueprint
                 ramp,
-                (self.start_ramp_voltage(), self.start_ramp_voltage()),  # plateau
+                (self.start_ramp_voltage(), self.start_ramp_voltage()),
+                # plateau
                 dur=self.restart_compensation(),
                 name="staircase_restart_compensation"
             )
@@ -208,7 +213,8 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
         waveform_id = 1
         sequence.addElement(waveform_id, staircase_element)
         sequence.setSequencingTriggerWait(waveform_id, 0)
-        sequence.setSequencingNumberOfRepetitions(waveform_id, self.n_repetitions())
+        sequence.setSequencingNumberOfRepetitions(waveform_id,
+                                                  self.n_repetitions())
         # # infinite sequence - useful for debugging on hardware
         # sequence.setSequencingGoto(waveform_id, goto=waveform_id)
 

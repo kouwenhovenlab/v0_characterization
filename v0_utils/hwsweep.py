@@ -3,10 +3,10 @@ THis module shall contain the infrastructure needed in order to implement
 hardware sweeps.
 """
 
-from qcodes import Instrument
+from .qcodes_tools import VirtualInstrument
 
 
-class HardwareSweep(Instrument):
+class HardwareSweep(VirtualInstrument):
     """
     This is a base class for all the hardware sweeps.
 

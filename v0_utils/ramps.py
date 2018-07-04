@@ -1,9 +1,10 @@
 import numpy as np
-from qcodes import Instrument
 from qcodes.utils.validators import Numbers
 
+from .qcodes_tools import VirtualInstrument
 
-class StaircaseRamp(Instrument):
+
+class StaircaseRamp(VirtualInstrument):
     """
     Encapsulates parameters of a staircase ramp of a parameter, assumes volts
     as the unit.
@@ -13,6 +14,7 @@ class StaircaseRamp(Instrument):
             Name of the staircase ramp instrument, useful for referring to in
             snapshot
     """
+
     def __init__(self,
                  name: str,
                  **kwargs):
@@ -79,6 +81,7 @@ class RepeatingStaircaseRamp(StaircaseRamp):
     """
     Encapsulates parameters of a repeating staircase
     """
+
     def __init__(self,
                  name: str,
                  **kwargs):

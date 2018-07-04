@@ -6,16 +6,17 @@ broadbean sequence objects produced by sequence generators to AWG devices.
 from typing import Type
 
 import numpy as np
-from qcodes import Instrument, Parameter
+from qcodes import Parameter
 from qcodes.instrument_drivers.tektronix.AWG70000A import AWG70000A, \
     _chan_resolutions as awg_channel_resolutions
 from qcodes.utils.validators import Numbers
 
+from .qcodes_tools import VirtualInstrument
 from .sequence_generators import SequenceGenerator, \
     OneChannelOneMarkerGenerator
 
 
-class AwgSequencer(Instrument):
+class AwgSequencer(VirtualInstrument):
     """
     This is the base class of an AWG sequencer. The goal of this class is to
     encapsulate the logic of sending a broadbean sequence object to an AWG
