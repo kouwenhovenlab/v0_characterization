@@ -24,8 +24,7 @@ from qcodes.instrument_drivers.stanford_research.SR860 import SR860
 from qcodes.instrument_drivers.stanford_research.SR86x import SR86x
 
 # Broadbean module for defining signals emitted by AWG
-import broadbean as bb
-from broadbean import plotting
+import broadbean
 
 from qcodes.utils.validators import Numbers, Ints, Enum
 from qcodes.instrument.base import InstrumentBase
@@ -327,12 +326,12 @@ class SequenceGenerator(Instrument):
 
         self.sequence_name = sequence_name if sequence_name else name
 
-    def make_broadbean_sequence(self) -> bb.Sequence:
+    def make_broadbean_sequence(self) -> broadbean.Sequence:
         raise NotImplementedError("Subclasses of SequenceGenerator should "
                                   "implement make_broadbean_sequence method")
 
     def plot_broadbean_sequence(self):
-        plotting.plotter(self.make_broadbean_sequence())
+        broadbean.plotting.plotter(self.make_broadbean_sequence())
 
 
 class OneChannelOneMarkerGenerator(SequenceGenerator):
@@ -457,7 +456,7 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
             self.step_duration()  # distance between points
         )
 
-    def make_broadbean_sequence(self) -> bb.Sequence:
+    def make_broadbean_sequence(self) -> broadbean.Sequence:
         """
         Generates a broadbean sequence according to the set parameters.
 
@@ -465,10 +464,10 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
         """
         # Create blueprint
         # this thing is called "waveform" within AWG
-        staircase_blueprint = bb.BluePrint()
+        staircase_blueprint = broadbean.BluePrint()
         staircase_blueprint.setSR(self.sample_rate())
 
-        ramp = bb.PulseAtoms.ramp
+        ramp = broadbean.PulseAtoms.ramp
 
         # Compensation for the restart of the staircase
         if self.restart_compensation() > 0:
@@ -505,13 +504,13 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
 
         # Create an element out of the staircase blueprint
 
-        staircase_element = bb.Element()
+        staircase_element = broadbean.Element()
         staircase_element.addBluePrint(
             self.channel_number(), staircase_blueprint)
 
         # Create a sequence
 
-        sequence = bb.Sequence()
+        sequence = broadbean.Sequence()
         sequence.setSR(self.sample_rate())
 
         # Add the fast staircase element to the sequence
