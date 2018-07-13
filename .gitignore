@@ -1,6 +1,9 @@
 # Jupiter notebook checkpoints
 */.ipynb_checkpoints/
 
+# Python cache compiled files
+*/__pychace__/
+
 # PyCharm-related files
 .idea/
 
