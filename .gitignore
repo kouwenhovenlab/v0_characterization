@@ -1,5 +1,6 @@
 # Jupiter notebook checkpoints
 */.ipynb_checkpoints/
+.ipynb_checkpoints/
 
 # Python cache compiled files
 */__pycache__/
