@@ -268,7 +268,7 @@ class OneChannelTwoMarkerAwgSequencer(AwgSequencer):
                            get_cmd=self._get_marker_rising_high,
                            set_cmd=self._set_marker_rising_high,
                            get_parser=float,
-                           initial_value=2.5,
+                           initial_value=1.7,
                            vals=Numbers(),
                            docstring="The marker high value for the marker "
                                      "channel for the rising edge within the analog channel."
