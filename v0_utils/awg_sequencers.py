@@ -207,3 +207,4 @@ class OneChannelOneMarkerAwgSequencer(AwgSequencer):
         """
         self._send_sequence_to_awg_and_load()
         self._setup_awg_channels_for_sequence()
+

@@ -219,3 +219,155 @@ class RepeatingStaircaseRampGenerator(OneChannelOneMarkerGenerator):
         # sequence.setSequencingGoto(waveform_id, goto=waveform_id)
 
         return sequence
+
+
+class ClockSignalGenerator(OneChannelOneMarkerGenerator):
+    """
+    Generates broadbean sequence for a staircase with a marker signal for
+    triggering.
+    """
+
+    def __init__(self,
+                 name: str,
+                 **kwargs):
+        super().__init__(name, **kwargs)
+
+        # Base this class on the repeating staircase ramp object
+        # ("inclusion" as opposed to "subclassing" is used in order to
+        # decouple the implementation details of the staircase ramp object)
+        # self.add_submodule('staircase_ramp',
+        #                    RepeatingStaircaseRamp('repeating_staircase_ramp')
+        #                    )
+        # self.delegate_attr_objects.append('staircase_ramp')
+
+        # Channel definitions
+        # TODO: somewhere MAX VALUE has to meet the AWG channel number limit
+        self.add_parameter(name='channel_number',
+                           label='Signal channel number',
+                           unit='',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=int,
+                           initial_value=1,
+                           vals=Numbers(min_value=1),
+                           docstring="Number of the channel for the analog "
+                                     "signal"
+                           )
+        # TODO: somewhere MAX VALUE has to meet the AWG marker channel number limit
+        self.add_parameter(name='marker_channel_number',
+                           label='Marker channel number',
+                           unit='',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=int,
+                           initial_value=1,
+                           vals=Numbers(min_value=1),
+                           docstring="Number of the channel for the marker "
+                                     "signal within the analog channel"
+                           )
+
+        # Waveform generation specific parameters
+        self.add_parameter(name='sample_rate',
+                           # TODO: perhaps should be derived from AWG settings and limits
+                           label='Sample rate',
+                           unit='S/s',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=float,
+                           initial_value=10e3,
+                           vals=Numbers(min_value=0),
+                           docstring="sample rate for AWG - we need it upfront for defining the broadbean sequence"
+                           )
+        self.add_parameter(name='ramp_frequency',
+                           label='Frequency of inner loop of hardware ramp',
+                           unit='Hz',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=float,
+                           initial_value=100,
+                           vals=Numbers(min_value=0),
+                           docstring="This is the frequenc of the inner loop "
+                                     "of the hardware sweep"
+                           )
+        self.add_parameter(name='n_trig',
+                           label='Number of triggers per ramp period',
+                           unit='',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=int,
+                           initial_value=10,
+                           vals=Numbers(min_value=0),
+                           docstring="This is the number of triggers to output "
+                                     "per period of the inner hardware ramp"
+                           )
+        self.add_parameter(name='level',
+                           label='analog output level',
+                           unit='V',
+                           get_cmd=None,
+                           set_cmd=None,
+                           get_parser=float,
+                           initial_value=1,
+                           vals=Numbers(min_value=0),
+                           docstring="This is the analog channel output level"
+                           )
+
+    # def get_trigger_moments_vector(self):
+    #     #     return np.arange(
+    #     #         self.settlement_time(),  # from
+    #     #         self.n_all_steps() * self.step_duration(),  # until
+    #     #         self.step_duration()  # distance between points
+    #     #     )
+
+    def get_trigger_moments_vector(self):
+        return np.arange(
+            self.settlement_time(),  # from
+            self.n_all_steps() * self.step_duration(),  # until
+            self.step_duration()  # distance between points
+        )
+
+    def make_broadbean_sequence(self) -> broadbean.Sequence:
+        """
+        Generates a broadbean sequence according to the set parameters.
+
+        :return: Broadbean sequence object
+        """
+        # Create blueprint
+        # this thing is called "waveform" within AWG
+        bp = broadbean.BluePrint()
+        bp.setSR(self.sample_rate())
+
+        ramp = broadbean.PulseAtoms.ramp
+
+        n_trig = self.n_trig()
+        ramp_frequency = self.ramp_frequency()
+        clock_period = 1 / (n_trig * ramp_frequency)
+
+
+        bp.insertSegment(0, ramp, (self.level(), self.level()), dur=clock_period
+                                                                / 2)
+        bp.insertSegment(1, ramp, (0, 0), dur=clock_period / 2)
+
+        bp2 = broadbean.BluePrint()
+        bp2.setSR(self.sample_rate())
+        for i in range(n_trig):
+            bp2 = bp2 + bp
+
+        markerlist = []
+        for i in range(n_trig):
+            markerlist.append((clock_period * i, clock_period / 2))
+        bp2.marker1 = markerlist
+
+        elem1 = broadbean.Element()
+        elem1.addBluePrint(self.channel_number(), bp2)
+        elem1.validateDurations()
+
+        waveform_id = 1
+        seq1 = broadbean.Sequence()
+        seq1.addElement(waveform_id, elem1)
+        seq1.setSR(self.sample_rate())
+        seq1.setSequencingTriggerWait(waveform_id, 0)
+        # The sequence can be validated
+        seq1.checkConsistency()  # returns True if all is well, raises errors if not
+
+
+        return seq1
