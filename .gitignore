@@ -1,8 +1,16 @@
 # Jupiter notebook checkpoints
 */.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# Python cache compiled files
+*/__pycache__/
 
 # PyCharm-related files
 .idea/
 
 # Files created by pip after instaling this package
 *.egg-info/
+
+qcodesrc.json
+qcodesrc_schema.json
+experiments.db
